@@ -7,7 +7,10 @@ class CompletionClient:
     TIMEOUT = 60
 
     def __init__(self, token: str, session: requests.Session, api_url: str) -> None:
-        self._headers = {"Authorization": f"Bearer {token}"}
+        self._headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}"
+        }
         self._session = session
         self._api_url = api_url
 
@@ -26,15 +29,15 @@ class CompletionClient:
             self._api_url,
             headers=self._headers,
             json={
-                "prompt": prompt,
                 "model": model,
+                "messages": [{"role": "user", "content": prompt}],
                 "max_tokens": self.MAX_TOKENS,
                 "temperature": self.TEMPERATURE,
             },
             timeout=self.TIMEOUT,
         )
         response.raise_for_status()
-        return response.json()["choices"][0]["text"].strip()
+        return response.json()["choices"][0]["message"]['content'].strip()
 
 
 def build_completion_client(token: str, api_url: str) -> CompletionClient:
